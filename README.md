@@ -40,5 +40,5 @@ This repository demonstrates a GitHub Actions matrix build that produces a build
 
 If you need help setting this up or want me to adapt the workflow (e.g., use multiple OS values, add build steps, or publish releases), email me at: **bhargava@example.com**
 
-> Replace `bhargava@example.com` with your real email address before pushing if you want your email in the repo.
+> Replace `24f3003270@ds.study.iitm.ac.in` with your real email address before pushing if you want your email in the repo.
 
