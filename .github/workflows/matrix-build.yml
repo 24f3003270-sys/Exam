@@ -1,0 +1,71 @@
+name: Matrix Build + Artifacts (build-4ffd510)
+
+# Allow manual runs and run on push to main (or any branch)
+on:
+  push:
+    branches: [ main, master ]
+  workflow_dispatch: {}
+
+jobs:
+  build:
+    name: Build (node ${{ matrix.node-version }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        node-version: [14, 16, 18]   # three variants -> three parallel jobs
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+
+      - name: matrix-4ffd510
+        # required identifier step
+        run: |
+          echo "matrix identifier present: matrix-4ffd510"
+          echo "Running on runner: $(hostname)"
+          echo "Node version in matrix: ${{ matrix.node-version }}"
+
+      - name: Print environment (debug)
+        run: |
+          echo "Job: $GITHUB_JOB"
+          echo "Run ID: $GITHUB_RUN_ID"
+          node --version
+
+      - name: Generate unique build artifact
+        # Ensure artifact is non-empty and unique per matrix variant
+        run: |
+          mkdir -p build-output
+          TIMESTAMP="$(date --utc +'%Y-%m-%dT%H:%M:%SZ')"
+          echo "Build artifact for node ${{ matrix.node-version }}" > build-output/output.txt
+          echo "Repo: $GITHUB_REPOSITORY" >> build-output/output.txt
+          echo "Run ID: $GITHUB_RUN_ID" >> build-output/output.txt
+          echo "Matrix value: ${{ matrix.node-version }}" >> build-output/output.txt
+          echo "Timestamp: $TIMESTAMP" >> build-output/output.txt
+          # also write a tiny JSON for variety
+          cat > build-output/metadata.json <<EOF
+{
+  "node_version": "${{ matrix.node-version }}",
+  "run_id": "${GITHUB_RUN_ID}",
+  "timestamp": "$TIMESTAMP"
+}
+EOF
+          ls -l build-output
+          cat build-output/output.txt
+
+      - name: Upload artifact (text + json) with matrix-specific name
+        uses: actions/upload-artifact@v4
+        with:
+          # artifact name must have prefix build-4ffd510-<variant>
+          name: build-4ffd510-node${{ matrix.node-version }}
+          path: build-output/
+
+      - name: Confirm artifact created locally
+        run: |
+          echo "Listing contents:"
+          ls -R build-output || true
